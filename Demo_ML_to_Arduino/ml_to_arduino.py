@@ -25,8 +25,8 @@ X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=df.columns)
 ser = serial.Serial("COM3", 9600)
 time.sleep(2)
 
-classification_result = np.argmax(model.predict(X_test_scaled_df), axis=-1)
+classification_result = '0' if np.argmax(model.predict(X_test_scaled_df), axis=-1) % 2 == 0 else '1'
 
-ser.write(classification_result[0].encode())
+ser.write(classification_result.encode())
 
 ser.close()

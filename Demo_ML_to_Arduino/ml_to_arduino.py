@@ -21,12 +21,13 @@ scaler = joblib.load("scaler.save")
 X_test_scaled = scaler.transform(df)
 X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=df.columns)
 
-
+# make sure the serial port and baud rates are consistent with the arduino
 ser = serial.Serial("COM3", 9600)
 time.sleep(2)
 
 classification_result = '0' if np.argmax(model.predict(X_test_scaled_df), axis=-1) % 2 == 0 else '1'
 
+# will write 0 or 1 to the serial port of the arduino
 ser.write(classification_result.encode())
 
 ser.close()

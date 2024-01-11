@@ -36,9 +36,11 @@ ser = serial.Serial("COM3", 9600)
 time.sleep(2)
 
 # hand movement was detected
-classification_result = "1" if np.argmax(model.predict(X_test_scaled_df), axis=-1)[10] in [0, 2, 3, 4, 5, 6, 7] else "0"
+for i in range(len(50)):
+    classification_result = "1" if np.argmax(model.predict(X_test_scaled_df), axis=-1)[i] in [0, 2, 3, 4, 5, 6, 7] else "0"
+    ser.write(classification_result.encode())
+    # send classification result every 3 seconds
+    time.sleep(3)
 
 # will write 0 or 1 to the serial port of the arduino
-ser.write(classification_result.encode())
-
 ser.close()

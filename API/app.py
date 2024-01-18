@@ -29,7 +29,7 @@ scheduler.add_job(clear_database, 'interval', minutes=5)
 
 
 @app.post("/", response_model=schemas.Response)
-def create_data(data: schemas.BaseData, db: Session = Depends(get_db)):
+def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
     if (db_data):
         raise HTTPException(status_code=400, detail="Value already in db")

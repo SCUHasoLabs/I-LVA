@@ -5,14 +5,13 @@ import models, database, schemas
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 
-import json
-
 app = FastAPI()
 scheduler = AsyncIOScheduler()
 scheduler.start()
 
 models.Base.metadata.create_all(bind=engine)
 
+#load the database
 def get_db():
     db = SessionLocal()
     try:
@@ -20,15 +19,17 @@ def get_db():
     finally:
         db.close()
 
+#clear database function
 def clear_database():
     with Session() as session:
         session.query(models.Data).delete()
         session.commit()
 
+#clear database every 5 minutes to not get it cluttered
 scheduler.add_job(clear_database, 'interval', minutes=5)
 
-
-@app.post("/", response_model=schemas.Response)
+# create an entry into the database for emg data
+@app.post("/", response_model=schemas.Response, status_code=204)
 def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
     if (db_data):
@@ -47,7 +48,8 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     )
     return response
 
-@app.get("/show/", response_model=list[schemas.DBResponse])
+# retrieve all entries in the database
+@app.get("/show/", response_model=list[schemas.DBResponse], status_code=200)
 def show_db(db: Session = Depends(get_db)):
     data = db.query(models.Data).all()
     return data

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 class BaseData(BaseModel):
     location: str
     value: float
+    raw_emg_values: list[float]
     result: int
 
     class Config:
@@ -20,6 +21,7 @@ class DBResponse(BaseModel):
     location: str
     value: float
     result: int
+    raw_emg_values: list[float]
 
     class Config:
         orm_mode = True

@@ -29,12 +29,12 @@ def clear_database():
 scheduler.add_job(clear_database, 'interval', minutes=5)
 
 # create an entry into the database for emg data
-@app.post("/", response_model=schemas.Response, status_code=204)
+@app.post("/", response_model=schemas.Response, status_code=200)
 def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
     if (db_data):
         raise HTTPException(status_code=400, detail="Value already in db")
-    new_data = models.Data(location=data.location, value=data.value, result=data.result)
+    new_data = models.Data(location=data.location, value=data.value, result=data.result, raw_emg_values=data.raw_emg_values)
     db.add(new_data)
     db.commit()
     db.refresh(new_data)
@@ -44,7 +44,8 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
         location=new_data.location, 
         is_added=True,
         result=new_data.result,
-        value=new_data.value
+        value=new_data.value,
+        raw_emg_values=new_data.raw_emg_values
     )
     return response
 

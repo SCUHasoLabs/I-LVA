@@ -32,7 +32,7 @@ scheduler.add_job(clear_database, 'interval', minutes=5)
 @app.post("/", response_model=schemas.Response, status_code=200)
 def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
-    if (db_data):
+    if db_data:
         raise HTTPException(status_code=400, detail="Value already in db")
     new_data = models.Data(location=data.location, value=data.value, classification=data.classification, raw_emg_values=data.raw_emg_values)
     db.add(new_data)
@@ -49,8 +49,40 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     )
     return response
 
+@app.put("/api/vr_to_lv", response_model=schemas.Message, status_code=200)
+def post_entry(data: schemas.DataModel, db: Session = Depends(get_db)):
+    old_data = db.query(models.VirtualToPhysical).first()
+    if not old_data:
+        entry = models.VirtualToPhysical(**data.dict())
+        db.add(entry)
+
+        message = "New entry created successfully"
+    else:
+        old_data.diff_x = data.diff_x
+        old_data.diff_y = data.diff_y
+
+        message = "Entry was updated successfully"
+
+    db.commit()
+
+    return schemas.Message(
+        message=message
+    )
+
+
+
+
+
+#retrieve current entry for virtual to physical
+@app.get("/api/vr_to_lv", response_model=list[schemas.DBResponseVRtoLV], status_code=200)
+def get_entry(db: Session = Depends(get_db)):
+    data = db.query(models.VirtualToPhysical).all()
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="database is empty")
+    return data
+
 # retrieve all entries in the database
-@app.get("/show/", response_model=list[schemas.DBResponse], status_code=200)
+@app.get("/", response_model=list[schemas.DBResponse], status_code=200)
 def show_db(db: Session = Depends(get_db)):
     data = db.query(models.Data).all()
     return data

@@ -9,9 +9,22 @@ class BaseData(BaseModel):
     class Config:
         orm_mode = True
 
+class DataModel(BaseModel):
+    diff_x: int
+    diff_y: int
+
+    class Config:
+        orm_mode = True
+
 class Response(BaseData):
     id: int
     is_added: bool
+
+    class Config:
+        orm_mode = True
+
+class Message(BaseModel):
+    message: str
 
     class Config:
         orm_mode = True
@@ -22,6 +35,14 @@ class DBResponse(BaseModel):
     value: float
     classification: int
     raw_emg_values: list[float]
+
+    class Config:
+        orm_mode = True
+
+class DBResponseVRtoLV(BaseModel):
+    id: int
+    diff_x: int
+    diff_y: int
 
     class Config:
         orm_mode = True

@@ -50,7 +50,7 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     return response
 
 @app.put("/api/vr_to_lv", response_model=schemas.Message, status_code=200)
-def post_entry(data: schemas.DataModel, db: Session = Depends(get_db)):
+def put_entry(data: schemas.DataModel, db: Session = Depends(get_db)):
     old_data = db.query(models.VirtualToPhysical).first()
     if not old_data:
         entry = models.VirtualToPhysical(**data.dict())
@@ -74,12 +74,13 @@ def post_entry(data: schemas.DataModel, db: Session = Depends(get_db)):
 
 
 #retrieve current entry for virtual to physical
-@app.get("/api/vr_to_lv", response_model=list[schemas.DBResponseVRtoLV], status_code=200)
+# originally had response model which was DBResponseVRtoLV
+@app.get("/api/vr_to_lv", status_code=200)
 def get_entry(db: Session = Depends(get_db)):
     data = db.query(models.VirtualToPhysical).all()
     if len(data) == 0:
         raise HTTPException(status_code=400, detail="database is empty")
-    return data
+    return {"raw data": data}
 
 # retrieve all entries in the database
 @app.get("/", response_model=list[schemas.DBResponse], status_code=200)

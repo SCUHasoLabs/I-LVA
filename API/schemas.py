@@ -7,27 +7,27 @@ class BaseData(BaseModel):
     classification: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DataModel(BaseModel):
     diff_x: int
     diff_y: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Response(BaseData):
     id: int
     is_added: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Message(BaseModel):
     message: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DBResponse(BaseModel):
     id: int
@@ -37,7 +37,7 @@ class DBResponse(BaseModel):
     raw_emg_values: list[float]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DBResponseVRtoLV(BaseModel):
     id: int
@@ -45,4 +45,4 @@ class DBResponseVRtoLV(BaseModel):
     diff_y: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

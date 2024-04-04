@@ -4,12 +4,23 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import models, database, schemas
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
-
 app = FastAPI()
 scheduler = AsyncIOScheduler()
 scheduler.start()
+import uvicorn
+from fastapi.middleware.cors import CORSMiddleware 
 
 models.Base.metadata.create_all(bind=engine)
+
+origins = ['*']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) 
 
 #load the database
 def get_db():
@@ -87,3 +98,6 @@ def get_entry(db: Session = Depends(get_db)):
 def show_db(db: Session = Depends(get_db)):
     data = db.query(models.Data).all()
     return data
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0', port=8000)

@@ -45,7 +45,7 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
     if db_data:
         raise HTTPException(status_code=400, detail="Value already in db")
-    new_data = models.Data(location=data.location, value=data.value, classification=data.classification, raw_emg_values=data.raw_emg_values)
+    new_data = models.Data(location=data.location, value=float(data.value), classification=data.classification)
     db.add(new_data)
     db.commit()
     db.refresh(new_data)
@@ -54,9 +54,8 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
         id=new_data.id,
         location=new_data.location, 
         is_added=True,
-        result=new_data.classification,
+        classification=new_data.classification,
         value=new_data.value,
-        raw_emg_values=new_data.raw_emg_values
     )
     return response
 
@@ -79,8 +78,6 @@ def put_entry(data: schemas.DataModel, db: Session = Depends(get_db)):
     return schemas.Message(
         message=message
     )
-
-
 
 
 

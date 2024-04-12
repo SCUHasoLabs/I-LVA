@@ -3,7 +3,7 @@ from pydantic import BaseModel
 class BaseData(BaseModel):
     location: str
     value: float
-    raw_emg_values: list[float]
+    # raw_emg_values: list[float]
     classification: int
 
     class Config:
@@ -34,7 +34,7 @@ class DBResponse(BaseModel):
     location: str
     value: float
     classification: int
-    raw_emg_values: list[float]
+    # raw_emg_values: list[float]
 
     class Config:
         from_attributes = True

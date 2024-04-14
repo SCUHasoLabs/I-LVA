@@ -4,6 +4,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import models, database, schemas
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
+from datetime import timezone, datetime as dt
 app = FastAPI()
 scheduler = AsyncIOScheduler()
 scheduler.start()
@@ -45,7 +47,7 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
     if db_data:
         raise HTTPException(status_code=400, detail="Value already in db")
-    new_data = models.Data(location=data.location, value=float(data.value), classification=data.classification)
+    new_data = models.Data(location=data.location, value=float(data.value), classification=data.classification, timestamp=str(dt.now(timezone.utc)))
     db.add(new_data)
     db.commit()
     db.refresh(new_data)
@@ -56,6 +58,7 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
         is_added=True,
         classification=new_data.classification,
         value=new_data.value,
+        timestamp=new_data.timestamp,
     )
     return response
 
@@ -95,6 +98,16 @@ def get_entry(db: Session = Depends(get_db)):
 def show_db(db: Session = Depends(get_db)):
     data = db.query(models.Data).all()
     return data
+
+@app.delete("/", response_model=schemas.Message, status_code=200)
+def del_db(db: Session = Depends(get_db)):
+    table_name: str = models.Data.__tablename__
+    db.query(models.Data).delete()
+    db.commit()
+
+    return schemas.Message(
+        message=f"Successful deletion of all entries in {table_name}"
+    )
 
 if __name__ == "__main__":
     uvicorn.run(app, host='0.0.0.0', port=8000)

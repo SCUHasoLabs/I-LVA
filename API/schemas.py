@@ -19,6 +19,7 @@ class DataModel(BaseModel):
 class Response(BaseData):
     id: int
     is_added: bool
+    timestamp: str
 
     class Config:
         from_attributes = True
@@ -34,6 +35,7 @@ class DBResponse(BaseModel):
     location: str
     value: float
     classification: int
+    timestamp: str
     # raw_emg_values: list[float]
 
     class Config:

@@ -42,22 +42,25 @@ def clear_database():
 scheduler.add_job(clear_database, 'interval', minutes=5)
 
 # create an entry into the database for emg data
+# post 
 @app.post("/", response_model=schemas.Response, status_code=200)
 def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
-    db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
-    if db_data:
-        raise HTTPException(status_code=400, detail="Value already in db")
-    new_data = models.Data(location=data.location, value=float(data.value), classification=data.classification, timestamp=str(dt.now(timezone.utc)))
+    # db_data = db.query(models.Data).filter(models.Data.value == data.value).first()
+    # if db_data:
+    #     raise HTTPException(status_code=400, detail="Value already in db")
+    # for the classifcation, need to write function that classifies and then call it to get the classification
+    # classification = classify.conduct_classification(data.raw_emg_values)
+    new_data = models.Data(classification=0, timestamp=str(dt.now(timezone.utc)), heart_rate=data.heart_rate, raw_emg_values=data.raw_emg_values)
     db.add(new_data)
     db.commit()
     db.refresh(new_data)
 
     response = schemas.Response(
         id=new_data.id,
-        location=new_data.location, 
         is_added=True,
         classification=new_data.classification,
-        value=new_data.value,
+        heart_rate=new_data.heart_rate,
+        raw_emg_values=new_data.raw_emg_values,
         timestamp=new_data.timestamp,
     )
     return response

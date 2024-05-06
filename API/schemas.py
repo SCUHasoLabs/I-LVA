@@ -1,10 +1,8 @@
 from pydantic import BaseModel
 
 class BaseData(BaseModel):
-    location: str
-    value: float
-    # raw_emg_values: list[float]
-    classification: int
+    raw_emg_values: list[float]
+    heart_rate: int
 
     class Config:
         from_attributes = True
@@ -20,6 +18,7 @@ class Response(BaseData):
     id: int
     is_added: bool
     timestamp: str
+    classification: int
 
     class Config:
         from_attributes = True
@@ -32,11 +31,10 @@ class Message(BaseModel):
 
 class DBResponse(BaseModel):
     id: int
-    location: str
-    value: float
     classification: int
+    raw_emg_values: list[float]
+    heart_rate: int
     timestamp: str
-    # raw_emg_values: list[float]
 
     class Config:
         from_attributes = True

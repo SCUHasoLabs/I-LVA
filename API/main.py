@@ -6,11 +6,13 @@ from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
 from datetime import timezone, datetime as dt
+from classify import conduct_classification
+import uvicorn
+from fastapi.middleware.cors import CORSMiddleware 
+
 app = FastAPI()
 scheduler = AsyncIOScheduler()
 scheduler.start()
-import uvicorn
-from fastapi.middleware.cors import CORSMiddleware 
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -49,8 +51,8 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     # if db_data:
     #     raise HTTPException(status_code=400, detail="Value already in db")
     # for the classifcation, need to write function that classifies and then call it to get the classification
-    # classification = classify.conduct_classification(data.raw_emg_values)
-    new_data = models.Data(classification=0, timestamp=str(dt.now(timezone.utc)), heart_rate=data.heart_rate, raw_emg_values=data.raw_emg_values)
+    classification = conduct_classification(data.raw_emg_values)
+    new_data = models.Data(classification=classification, timestamp=str(dt.now(timezone.utc)), heart_rate=data.heart_rate, raw_emg_values=data.raw_emg_values)
     db.add(new_data)
     db.commit()
     db.refresh(new_data)

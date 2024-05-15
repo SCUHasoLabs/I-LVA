@@ -1,43 +1,21 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from sqlalchemy.orm import Session
-from models import ExampleItem, SessionLocal
-import atexit
-from tensorflow.keras.models import load_model
+from typing import List
 import numpy as np
-
+from keras.models import load_model
+from joblib import load
 # Load the ml model here
-model = load_model('my_model.h5')
+model = load_model('EMG_binary_classification')
+scaler = load('scaler.joblib')  # Load the scaler from disk
 
-# Use the python to arduino code, which does the pre-processing, just add that here
-def preprocess_data(data):
-    processed_data = np.array(data).reshape(1, -1)
-    return processed_data
-
-# This is just a template, can change depending on the model
-def classify_data(data):
-    processed_data = preprocess_data(data)
-    prediction = model.predict(processed_data)
-    predicted_class = np.argmax(prediction)
-    return predicted_class
-
-def classify_and_update_db():
-    db = SessionLocal()
+def conduct_classification(raw_emg_values: []) -> int: # type: ignore
     try:
-        # Query for unclassified items
-        unclassified_items = db.query(ExampleItem).filter(ExampleItem.classification == None).all()
-        for item in unclassified_items:
-            # Perform classification
-            classification_result = classify_data(item.data)
-            # Update the item with the classification result
-            item.classification = classification_result
-            db.add(item)
-        db.commit()
-    finally:
-        db.close()
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=classify_and_update_db, trigger="interval", seconds=5)
-scheduler.start()
-
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+        # Preprocess the data
+        input_data = np.array(raw_emg_values).reshape(1, -1)  # Reshape data for the model
+        input_data = scaler.transform(input_data)  # Scale the data using the loaded scaler
+        
+        # Make prediction
+        prediction = model.predict(input_data)
+        prediction_class = int(np.argmax(prediction, axis=1)[0])
+        
+        return prediction_class
+    except Exception as e:
+        return None

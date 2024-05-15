@@ -1,9 +1,9 @@
 from typing import List
 import numpy as np
-from keras.models import load_model
+import tensorflow as tf
 from joblib import load
 # Load the ml model here
-model = load_model('EMG_binary_classification')
+model = tf.saved_model.load('./EMG_binary_classification')
 scaler = load('scaler.joblib')  # Load the scaler from disk
 
 def conduct_classification(raw_emg_values: []) -> int: # type: ignore

@@ -3,7 +3,8 @@ import numpy as np
 import tensorflow as tf
 from joblib import load
 # Load the ml model here
-model = tf.saved_model.load('./EMG_binary_classification')
+# model = tf.saved_model.load('./EMG_binary_classification')
+model = tf.saved_model.load('./my_saved_model')
 scaler = load('scaler.joblib')  # Load the scaler from disk
 
 def conduct_classification(raw_emg_values: []) -> int: # type: ignore

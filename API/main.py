@@ -52,6 +52,9 @@ def create_entry(data: schemas.BaseData, db: Session = Depends(get_db)):
     #     raise HTTPException(status_code=400, detail="Value already in db")
     # for the classifcation, need to write function that classifies and then call it to get the classification
     classification = conduct_classification(data.raw_emg_values)
+    if classification is None:
+        raise HTTPException(status_code=500, detail="Classification failed")
+    # print(classification)
     new_data = models.Data(classification=classification, timestamp=str(dt.now(timezone.utc)), heart_rate=data.heart_rate, raw_emg_values=data.raw_emg_values)
     db.add(new_data)
     db.commit()

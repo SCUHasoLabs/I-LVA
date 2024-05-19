@@ -1,22 +1,36 @@
 from typing import List
+from fastapi import HTTPException
 import numpy as np
 import tensorflow as tf
 from joblib import load
+import pandas as pd
 # Load the ml model here
-# model = tf.saved_model.load('./EMG_binary_classification')
-model = tf.saved_model.load('./my_saved_model')
-scaler = load('scaler.joblib')  # Load the scaler from disk
 
-def conduct_classification(raw_emg_values: []) -> int: # type: ignore
+model = tf.keras.models.load_model('new_model.h5')
+# model = tf.saved_model.load('./my_saved_model')
+scaler = load('scaler1.joblib')  # Load the scaler from disk
+
+
+def conduct_classification(raw_emg_values: List[float]) -> int:
     try:
         # Preprocess the data
-        input_data = np.array(raw_emg_values).reshape(1, -1)  # Reshape data for the model
-        input_data = scaler.transform(input_data)  # Scale the data using the loaded scaler
+        raw_data = np.array([raw_emg_values])  # Convert to DataFrame with feature names
+        input_data = scaler.transform(raw_data)
         
+
+        # Convert input data to a tensor
+        input_tensor = tf.convert_to_tensor(input_data, dtype=tf.float32)
+        
+        print(input_tensor)
+
         # Make prediction
-        prediction = model.predict(input_data)
-        prediction_class = int(np.argmax(prediction, axis=1)[0])
+        prediction = model.predict(input_tensor)
         
-        return prediction_class
+        print(prediction)
+
+        # Check the prediction output
+        predicted_class = 1 if prediction[0][0] > 0.5 else 0
+
+        return predicted_class
     except Exception as e:
-        return None
+        raise HTTPException(status_code=500, detail=f"Error during classification: {e}")
